@@ -7,9 +7,9 @@ been covered yet.
 DEALER_CUTOFF = 17
 BUSTED_CUTOFF = 21
 
-face_card_prob = p
+# face_card_prob = p
 
-def find_prob(player_sum, dealer_sum):
+def find_prob(player_sum, dealer_sum, p):
     """
     This function gives the probability that eventually after 
     performing consecutive Hit moves, the dealer sum exceeds or is 
@@ -42,21 +42,21 @@ def find_prob(player_sum, dealer_sum):
 
     # Add the probabilities corresponding to various number cards in the next hit move
     for card in range(2,10):
-        prob_tuple = find_prob(player_sum, dealer_sum + card)
-        nobust_prob = nobust_prob + (1-p)/9 * prob_pair[0]
-        bust_prob = bust_prob + (1-p)/9 * prob_pair[1]
-        push_prob = push_prob + (1-p)/9 * prob_pair[2]
+        prob_tuple = find_prob(player_sum, dealer_sum + card, p)
+        nobust_prob = nobust_prob + (1-p)/9 * prob_tuple[0]
+        bust_prob = bust_prob + (1-p)/9 * prob_tuple[1]
+        push_prob = push_prob + (1-p)/9 * prob_tuple[2]
     
     # Add the probability of getting a Face Card in the next hit move
-    face_prob_tuple = find_prob(player_sum, dealer_sum + 10)
+    face_prob_tuple = find_prob(player_sum, dealer_sum + 10, p)
     nobust_prob = nobust_prob + p * face_prob_tuple[0]
     bust_prob = bust_prob + p * face_prob_tuple[1]
     push_prob = push_prob + p * face_prob_tuple[2]
 
     # Add the probability of getting an Ace Card in the next hit move
     # TODO: Currently taking Ace to be 11. How to check in player's favour?
-    ace_prob_tuple = find_prob(player_sum, dealer_sum + 11)
-    prob = prob + (1-p)/9 * ace_prob_tuple[0]
+    ace_prob_tuple = find_prob(player_sum, dealer_sum + 11, p)
+    nobust_prob = nobust_prob + (1-p)/9 * ace_prob_tuple[0]
     bust_prob = bust_prob + (1-p)/9 * ace_prob_tuple[1]
     push_prob = push_prob + (1-p)/9 * ace_prob_tuple[2]
 
@@ -76,7 +76,7 @@ def reward(face_up, player_sum, p, bet):
     elif player_sum > BUSTED_CUTOFF:
         return -bet
     else:
-        prob_tuple = find_prob(player_sum, face_up)
+        prob_tuple = find_prob(player_sum, face_up, p)
         nobust_prob = prob_tuple[0]
         bust_prob = prob_tuple[1]
         push_prob = prob_tuple[2]
