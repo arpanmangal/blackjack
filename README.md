@@ -3,5 +3,6 @@ An optimal policy for blackjack (casino card game) using MDP
 
 ## Running
 ```
-$ python3 blackjack.py
+$ ./compile.sh
+$ ./run.sh 0.308
 ```
