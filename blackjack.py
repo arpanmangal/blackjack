@@ -266,8 +266,6 @@ def dealer (player_sum, dealer_card, bet, hasBlackjack=False):
         return -bet
 
     if dealer_card == 'A':
-        # change this as wrong
-        # @divyanshu
         dealer_sum = 11
     else:
         dealer_sum = int(dealer_card)

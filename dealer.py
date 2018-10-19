@@ -36,7 +36,9 @@ def find_prob(player_sum, dealer_sum, p, num_cards):
         return (1, 0, 0, 0)
     elif dealer_sum == player_sum and dealer_sum >= DEALER_CUTOFF:
         # player_sum is assumed to be within bust limit.
-        return (0, 0, 1, 0)
+        if player_sum == BUSTED_CUTOFF and num_cards == 2:
+            return (1, 0, 0, 0)
+        return (0, 0, 1, 0) 
     elif dealer_sum >= DEALER_CUTOFF:
         # Dealer sum not surpassed player sum and not busted as well
         return (0, 0, 0, 0)
