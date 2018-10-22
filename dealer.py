@@ -50,11 +50,11 @@ def find_prob(dealer_sum, num_cards, is_soft):
             # Dealer's hand is eithere hard or no ace present. Hence, dealer busted.
             return (0, 1, 0, 0)
     
-    if dealer_sum > player_sum and dealer_sum <= BUSTED_CUTOFF:
+    if dealer_sum > PLAYER_SUM and dealer_sum <= BUSTED_CUTOFF:
         return (1, 0, 0, 0)
-    elif dealer_sum == player_sum and dealer_sum >= DEALER_CUTOFF:
+    elif dealer_sum == PLAYER_SUM and dealer_sum >= DEALER_CUTOFF:
         # player_sum is assumed to be within bust limit.
-        if player_sum == BUSTED_CUTOFF and num_cards == 2:
+        if PLAYER_SUM == BUSTED_CUTOFF and num_cards == 2:
             return (1, 0, 0, 0)
         return (0, 0, 1, 0) 
     elif dealer_sum >= DEALER_CUTOFF:
@@ -112,17 +112,24 @@ def reward(face_up, player_sum, p, bet, has_blackjack):
     elif PLAYER_SUM > BUSTED_CUTOFF:
         return -bet
     else:
-        if REWARDS[PLAYER_SUM][face_up] != DEFAULT:
-            return REWARDS[PLAYER_SUM][face_up]
+        array_index = PLAYER_SUM - DEALER_CUTOFF
+        if REWARDS[array_index][face_up-2] != DEFAULT:
+            return REWARDS[array_index][face_up-2]
 
-        prob_tuple = find_prob(player_sum, face_up, p, 1)
+        prob_tuple = (0, 0, 0, 0)
+        if face_up is 11:
+            prob_tuple = find_prob(face_up, 1, True)
+        else:
+            prob_tuple = find_prob(face_up, 1, False)
+
         nobust_prob = prob_tuple[0]
         bust_prob = prob_tuple[1]
         push_prob = prob_tuple[2]
         blackjack_prob = prob_tuple[3]
+
         simple_win_prob = (1-nobust_prob-push_prob-blackjack_prob)
-        
         reward = simple_win_prob * bet + 1.5 * blackjack_prob * bet - nobust_prob * bet
-        REWARDS[PLAYER_SUM][face_up] = reward
+
+        REWARDS[array_index][face_up-2] = reward
         return reward
         
