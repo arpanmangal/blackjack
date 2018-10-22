@@ -10,6 +10,14 @@ PLAYER_BLACKJACK = False
 FACE_PROB = 0
 PLAYER_SUM = 0
 REWARDS = []
+DEFAULT = 0.0001
+
+for i in range(DEALER_CUTOFF, BUSTED_CUTOFF+1):
+    sum_reward = []
+    for card in range(2, 12):
+        # 2-9 Numbers, 10 Face and 11 Ace
+        sum_reward.append(0.0001)
+    REWARDS.append(sum_reward)
 
 def find_prob(dealer_sum, num_cards, is_soft): 
     """
@@ -104,12 +112,17 @@ def reward(face_up, player_sum, p, bet, has_blackjack):
     elif PLAYER_SUM > BUSTED_CUTOFF:
         return -bet
     else:
+        if REWARDS[PLAYER_SUM][face_up] != DEFAULT:
+            return REWARDS[PLAYER_SUM][face_up]
+
         prob_tuple = find_prob(player_sum, face_up, p, 1)
         nobust_prob = prob_tuple[0]
         bust_prob = prob_tuple[1]
         push_prob = prob_tuple[2]
         blackjack_prob = prob_tuple[3]
         simple_win_prob = (1-nobust_prob-push_prob-blackjack_prob)
+        
         reward = simple_win_prob * bet + 1.5 * blackjack_prob * bet - nobust_prob * bet
+        REWARDS[PLAYER_SUM][face_up] = reward
         return reward
         
