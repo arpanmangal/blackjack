@@ -48,9 +48,9 @@ def value_iteration (current_values):
                     reward = R_soft(int(hand[1:]), card, 1, current_values, dbl)[0]
                 elif len(hand) == 2 and hand[0] == hand[1] and hand is not '11':
                     # both same
-                    reward = R_soft(int(hand[0]), card, 1, current_values, dbl)[0]
+                    reward = R_split(int(hand[0]), card, 1, current_values, dbl)[0]
                 elif hand == '1010':
-                    reward = R_soft(10, card, 1, current_values, dbl)[0]
+                    reward = R_split(10, card, 1, current_values, dbl)[0]
                 else:
                     # hard total
                     reward = R_hard(int(hand), card, 1, current_values, dbl)[0]
@@ -201,8 +201,160 @@ def R_split(y, dealer_card, bet, current_values, isDoubleAllowed=False):
     has a hand of the form yy
     """
     
+    if y == 'A':
+        # The very strong hand case
+        return R_split_AA(dealer_card, bet, current_values, isDoubleAllowed)
+    
+    # Four choices - stand, hit, double, split
+
+    # stand
+    stand = dealer(2*y, dealer_card, bet)
+
+    # hit
+    hit = 0
+    if 2*y + 10 > 21: # hit is bust
+        hit += face_card_prob * (-bet)
+    else:
+        hit += face_card_prob * current_values[(str(2*y+10), dealer_card, False)] * bet
+
+    for x in range(2, 10): # pick another card x
+        if 2*y+x > 21:
+            hit += num_card_prob * (-bet)
+        else:
+            hit += num_card_prob * current_values [(str(2*y+x), dealer_card, False)] * bet
+
+    # x is an Ace
+    if 2*y <= 10: # Ay
+        hit += num_card_prob * current_values [( ('A' + str(2*y)), dealer_card, False)] * bet
+    else:
+        hit += num_card_prob * current_values [(str(2*y+1), dealer_card, False)] * bet
+
+    
+    # split
+    # play as 1 hand (double the expected profit), allowed to double
+    # pick a card
+    split = 0
     if y == 10:
-    return 0, 'H' ## placeholder
+        split += face_card_prob * current_values[('1010', dealer_card, True)] * bet
+    else:   
+        split += face_card_prob * current_values[(str(y+10), dealer_card, True)] * bet
+
+    for x in range(2, 10): # pick another card x
+        if x == y:
+            split += num_card_prob * current_values[((str(x)+str(x)), dealer_card, True)] * bet
+        else:
+            split += num_card_prob * current_values[(str(y+x), dealer_card, True)] * bet
+    
+    # x is an Ace
+    split += num_card_prob * current_values[( ('A'+str(y)), dealer_card, True)] * bet
+
+    # double profit
+    split *= 2
+
+    if stand >= hit:
+        if split >= stand:
+            max_action = split, 'P'
+        else:
+            max_action = stand, 'S'
+    else:
+        if split >= hit:
+            max_action = split, 'P'
+        else:
+            max_action = hit, 'H'
+    if (not isDoubleAllowed):
+        return max_action
+
+    ## double
+    double = 0
+    if 2*y+10 > 21:
+        double += face_card_prob * (-2*bet)
+    else:
+        double += face_card_prob * dealer(2*y+10, dealer_card, 2*bet)
+
+    for x in range(2, 10): # pick another card x
+        if 2*y+x > 21: # bust
+            double += num_card_prob * (-2*bet)
+        else:
+            double += num_card_prob * dealer(2*y+x, dealer_card, 2*bet)
+
+    # x is an Ace
+    if 2*y <= 10:
+        double += num_card_prob * dealer(2*y+11, dealer_card, 2*bet)
+    else:
+        double += num_card_prob * dealer(2*y+1, dealer_card, 2*bet)
+
+    if double > max_action[0]:
+        return double, 'D'
+    else:
+        return max_action
+
+
+def R_split_AA(dealer_card, bet, current_values, isDoubleAllowed=False):
+    """
+    Calculates the optimal long term reward (or value) when the player 
+    has a hand of the form AA
+    """
+
+    # Four choices - stand, hit, double, split
+
+    # stand
+    stand = dealer(12, dealer_card, bet)
+
+    # hit
+    hit = 0
+    hit += face_card_prob * (-bet) # a face card will always bust you
+
+    for x in range(2, 10): # pick another card x
+        if 12+x > 21:
+            hit += num_card_prob * (-bet)
+        else:
+            hit += num_card_prob * current_values[ (str(12+x), dealer_card, False) ] * bet
+
+    # x is an Ace
+    hit += num_card_prob * current_values [('A2', dealer_card, False)] * bet
+
+
+    ## split
+    ## only one card given to both hands
+    split = 0
+    split += face_card_prob * dealer(21, dealer_card, bet)
+
+    for x in range(2, 10): # pick another card x
+        split += num_card_prob * dealer((11+x), dealer_card, bet)
+    
+    # x is an Ace
+    split += num_card_prob * dealer(12, dealer_card, bet)
+
+    # double split
+    split *= 2
+
+    if stand >= hit:
+        if split >= stand:
+            max_action = split, 'P'
+        else:
+            max_action = stand, 'S'
+    else:
+        if split >= hit:
+            max_action = split, 'P'
+        else:
+            max_action = hit, 'H'
+    if (not isDoubleAllowed):
+        return max_action
+
+    ## double
+    double = 0
+    double += face_card_prob * (-2*bet) #12+10 = bust
+
+    for x in range(2, 10): #pick another card x
+        double += num_card_prob * dealer(12+x, dealer_card, 2*bet)
+
+    # x is an Ace
+    double += dealer(14, dealer_card, 2*bet)
+
+    if double > max_action[0]:
+        return double, 'D'
+    else:
+        return max_action
 
 
 def get_policy(values):
@@ -224,9 +376,9 @@ def get_policy(values):
                 action = R_soft(int(hand[1:]), card, 1, values, True)[1]
             elif len(hand) == 2 and hand[0] == hand[1] and hand is not '11':
                 # both same
-                action = R_soft(int(hand[0]), card, 1, values, True)[1]
+                action = R_split(int(hand[0]), card, 1, values, True)[1]
             elif hand == '1010':
-                action = R_soft(10, card, 1, values, True)[1]
+                action = R_split(10, card, 1, values, True)[1]
             else:
                 # hard total
                 action = R_hard(int(hand), card, 1, values, True)[1]
@@ -251,6 +403,24 @@ def print_policy (policy):
                 f.write('\n')
             elif card is not 'A':
                 f.write(' ')
+
+def log_policy (values):
+    """
+    Log the policy to a file
+    """
+
+    f = open('log.txt', 'a')
+    for hand in player_hand:
+        f.write (hand + '\t')
+        for card in dealer_card:
+            value = values[(hand, card, True)]
+            f.write(str(value))
+            if card is 'A' and hand is not 'AA':
+                f.write('\n')
+            elif card is not 'A':
+                f.write(' ')
+
+    f.write('\n\n')
 
 
 def dealer (player_sum, dealer_card, bet, hasBlackjack=False):
@@ -308,8 +478,11 @@ if __name__ == '__main__':
     num_card_prob = (1 - face_card_prob) / 9.0
 
     optimal_values = initialise_values()
-    for i in range(5):
+    f = open('log.txt', 'w')
+    f.write('')
+    for i in range(20):
         optimal_values = value_iteration(optimal_values)
+        log_policy(optimal_values)
         print (i, 'th iteration complete')
 
     optimal_policy = get_policy(optimal_values)

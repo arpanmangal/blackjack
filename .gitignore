@@ -106,3 +106,4 @@ venv.bak/
 # custom
 Policy.txt
 .vscode/*
+log.txt
