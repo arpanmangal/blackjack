@@ -265,18 +265,12 @@ def dealer (player_sum, dealer_card, bet, hasBlackjack=False):
 
     if player_sum > 21:
         return -bet
-    
-    if player_sum == 21 and hasBlackjack:
-        # this is wrong, but placeholder for now
-        return 1.5*bet
 
     if dealer_card == 'A':
-        # change this as wrong
-        # @divyanshu
         dealer_sum = 11
     else:
         dealer_sum = int(dealer_card)
-    return reward(dealer_sum, player_sum, face_card_prob, bet)
+    return reward(dealer_sum, player_sum, face_card_prob, bet, hasBlackjack)
 
 
 def calc_hand_sum(hand):
