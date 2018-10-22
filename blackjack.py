@@ -46,7 +46,7 @@ def value_iteration (current_values):
                 elif hand[0] is 'A':
                     # one of the cards is an ace
                     reward = R_soft(int(hand[1:]), card, 1, current_values, dbl)[0]
-                elif len(hand) == 2 and hand[0] == hand[1]:
+                elif len(hand) == 2 and hand[0] == hand[1] and hand is not '11':
                     # both same
                     reward = R_soft(int(hand[0]), card, 1, current_values, dbl)[0]
                 elif hand == '1010':
@@ -201,6 +201,7 @@ def R_split(y, dealer_card, bet, current_values, isDoubleAllowed=False):
     has a hand of the form yy
     """
     
+    if y == 10:
     return 0, 'H' ## placeholder
 
 
@@ -221,7 +222,7 @@ def get_policy(values):
             elif hand[0] is 'A':
                 # one of the cards is an ace
                 action = R_soft(int(hand[1:]), card, 1, values, True)[1]
-            elif len(hand) == 2 and hand[0] == hand[1]:
+            elif len(hand) == 2 and hand[0] == hand[1] and hand is not '11':
                 # both same
                 action = R_soft(int(hand[0]), card, 1, values, True)[1]
             elif hand == '1010':
@@ -296,7 +297,7 @@ def calc_hand_sum(hand):
 
     elif hand == '1010': ## 1010
         return (20, 20)
-    elif hand[0] == hand[1]: ## xx
+    elif hand[0] == hand[1] and hand is not '11': ## xx
         v = 2 * int(hand[0])
         return (v, v)
     else: ## x
