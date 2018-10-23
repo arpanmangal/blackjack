@@ -480,7 +480,7 @@ if __name__ == '__main__':
     optimal_values = initialise_values()
     f = open('log.txt', 'w')
     f.write('')
-    for i in range(20):
+    for i in range(50):
         optimal_values = value_iteration(optimal_values)
         log_policy(optimal_values)
         print (i, 'th iteration complete')
