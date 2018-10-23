@@ -7,7 +7,7 @@ been covered yet.
 DEALER_CUTOFF = 17
 BUSTED_CUTOFF = 21
 PLAYER_BLACKJACK = False
-FACE_PROB = 0
+PROB = 0
 PLAYER_SUM = 0
 REWARDS = []
 DEFAULT = 0.0001
@@ -33,6 +33,8 @@ def find_prob(dealer_sum, num_cards, is_soft):
     
     # At each call of this function, it is judged if another hit move is required or not.
     # Accordingly, the probabilities are calculated for number, face and ace cards  
+
+    # print ("Starting for dealer_sum: {0} and player_sum: {1}.".format(dealer_sum, PLAYER_SUM)) # Debug
 
     if PLAYER_BLACKJACK and num_cards != 1:
         if num_cards == 2 and dealer_sum == PLAYER_SUM:
@@ -72,26 +74,28 @@ def find_prob(dealer_sum, num_cards, is_soft):
         if card is 10:
             # Add the probability of getting a Face Card in the next hit move
             face_prob_tuple = find_prob(dealer_sum + 10, num_cards+1, False)
-            nobust_prob = nobust_prob + p * face_prob_tuple[0]
-            bust_prob = bust_prob + p * face_prob_tuple[1]
-            push_prob = push_prob + p * face_prob_tuple[2]
-            blackjack_prob = blackjack_prob + p * face_prob_tuple[3]
+            nobust_prob = nobust_prob + PROB * face_prob_tuple[0]
+            bust_prob = bust_prob + PROB * face_prob_tuple[1]
+            push_prob = push_prob + PROB * face_prob_tuple[2]
+            blackjack_prob = blackjack_prob + PROB * face_prob_tuple[3]
         elif card is 11:
             # Add the probability of getting an ace
             prob_tuple = find_prob(dealer_sum + card, num_cards+1, True)
-            nobust_prob = nobust_prob + (1-p)/9 * prob_tuple[0]
-            bust_prob = bust_prob + (1-p)/9 * prob_tuple[1]
-            push_prob = push_prob + (1-p)/9 * prob_tuple[2]
-            blackjack_prob = blackjack_prob + (1-p)/9 * prob_tuple[3]
+            nobust_prob = nobust_prob + (1-PROB)/9 * prob_tuple[0]
+            bust_prob = bust_prob + (1-PROB)/9 * prob_tuple[1]
+            push_prob = push_prob + (1-PROB)/9 * prob_tuple[2]
+            blackjack_prob = blackjack_prob + (1-PROB)/9 * prob_tuple[3]
         else:
             # Add the probabilities corresponding to simple number cards
             prob_tuple = find_prob(dealer_sum + card, num_cards+1, False)
-            nobust_prob = nobust_prob + (1-p)/9 * prob_tuple[0]
-            bust_prob = bust_prob + (1-p)/9 * prob_tuple[1]
-            push_prob = push_prob + (1-p)/9 * prob_tuple[2]
-            blackjack_prob = blackjack_prob + (1-p)/9 * prob_tuple[3]
+            nobust_prob = nobust_prob + (1-PROB)/9 * prob_tuple[0]
+            bust_prob = bust_prob + (1-PROB)/9 * prob_tuple[1]
+            push_prob = push_prob + (1-PROB)/9 * prob_tuple[2]
+            blackjack_prob = blackjack_prob + (1-PROB)/9 * prob_tuple[3]
     
-    return (nobust_prob, bust_prob, push_prob, blackjack_prob)
+    ret_tuple = (nobust_prob, bust_prob, push_prob, blackjack_prob)
+    # print ("Returning {0} for dealer_sum:{1}, player_sum:{2}".format(ret_tuple, dealer_sum, PLAYER_SUM)) # Debug
+    return ret_tuple
 
 
 def reward(face_up, player_sum, p, bet, has_blackjack):
@@ -103,9 +107,12 @@ def reward(face_up, player_sum, p, bet, has_blackjack):
     Also, `has_blackjack` argument is true if the player has a blackjack
     """ 
 
+    global PLAYER_SUM
+    global PROB
+
     PLAYER_BLACKJACK = has_blackjack
     PLAYER_SUM = player_sum
-    FACE_PROB = p
+    PROB = p
 
     if PLAYER_SUM < DEALER_CUTOFF:
         return -bet
