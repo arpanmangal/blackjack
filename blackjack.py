@@ -494,7 +494,6 @@ if __name__ == '__main__':
     for i in range(20):
         optimal_values = value_iteration(optimal_values)
         log_policy(optimal_values)
-        print (optimal_values[('16', '2', False)])
         print (i, 'th iteration complete')
 
     optimal_policy = get_policy(optimal_values)

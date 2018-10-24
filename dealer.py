@@ -38,7 +38,7 @@ def eval_prob(dealer_sum, num_cards, is_soft, acc_prob, face_up):
     global PROB
     global PROBABILITY
 
-    print ('Starting for ds:{0} fu:{1}'.format(dealer_sum, face_up))
+    # print ('Starting for ds:{0} fu:{1}'.format(dealer_sum, face_up))
     if dealer_sum > BUSTED_CUTOFF:
         if is_soft:
             eval_prob(dealer_sum-10, num_cards, False, acc_prob, face_up)
@@ -52,13 +52,13 @@ def eval_prob(dealer_sum, num_cards, is_soft, acc_prob, face_up):
         for card in range(2, 12):
             if card == 10:
                 # Probability that dealer hits a face card
-                eval_prob(dealer_sum+card, num_cards+1, is_soft, acc_prob*PROB, face_up)
+                eval_prob(dealer_sum+card, num_cards+1, is_soft, acc_prob*PROB/1.0, face_up)
             elif card == 11:
                 # Probability that dealer hits an ace
-                eval_prob(dealer_sum+card, num_cards+1, True, acc_prob*(1-PROB)/9, face_up)
+                eval_prob(dealer_sum+card, num_cards+1, True, acc_prob*(1-PROB)/9.0, face_up)
             else:
                 # Probability that dealer hits a number card
-                eval_prob(dealer_sum+card, num_cards+1, is_soft, acc_prob*(1-PROB)/9, face_up)
+                eval_prob(dealer_sum+card, num_cards+1, is_soft, acc_prob*(1-PROB)/9.0, face_up)
 
 def generate_table(p):
     """
@@ -70,16 +70,16 @@ def generate_table(p):
     PROB = p
     for card in range(2, 12):
         if card is 11:
-            eval_prob(card, 1, True, 1, 11)
+            eval_prob(card, 1, True, 1.0, 11)
         else:
-            eval_prob(card, 1, False, 1, card)
+            eval_prob(card, 1, False, 1.0, card)
 
 
 def write_table():
     file = open('stand.prob','w')
     for face_up in range(2, 12):
         for dealer_sum in range(DEALER_CUTOFF, BUSTED_CUTOFF+3):
-            file.write(str(PROBABILITY[(face_up, dealer_sum)])+' ')
+            file.write(str(round(PROBABILITY[(face_up, dealer_sum)], 6)) + ' ')
         file.write('\n')
 
 
