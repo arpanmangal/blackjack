@@ -12,6 +12,7 @@ PLAYER_SUM = 0
 REWARDS = []
 PROBABILITY = {}
 DEFAULT = float('inf')
+DEBUG = False
 
 STACK = []
 
@@ -41,34 +42,23 @@ def eval_prob(dealer_sum, num_cards, num_aces, acc_prob, face_up):
     global STACK
     global PROBABILITY
 
-    # if face_up == 11:
-        # print ('Starting for ds:{0}'.format(dealer_sum), end=' ')
     if dealer_sum > BUSTED_CUTOFF:
         if num_aces > 0:
             eval_prob(dealer_sum-10, num_cards, num_aces-1, acc_prob, face_up)
         else:
-            if face_up == 11:
+            if DEBUG and face_up == 11:
                 print (STACK)
-                # print ("Busted")
             PROBABILITY[(face_up, 22)] += acc_prob      # Busted
     elif dealer_sum >= DEALER_CUTOFF:
         if dealer_sum == BUSTED_CUTOFF and num_cards == 2:
-            # if face_up == 11:
-            #     print (STACK, end=' ')
-            #     print ("Blackjack")
             PROBABILITY[(face_up, 23)] += acc_prob      # Blackjack
         else:
-            # if dealer_sum == 17 and face_up == 11:
-                # print (STACK)
-                # print ("No Busted")
             PROBABILITY[(face_up, dealer_sum)] += acc_prob
     else:
         for card in range(2, 12):
-            if face_up is 11:
+            if DEBUG and face_up is 11:
                 if card != 2: 
                     c = STACK.pop()
-                #     print ('Removed {0}'.format(c), end=' ')
-                # print ('Appending {0}'.format(card))
                 STACK.append(card)
             if card == 10:
                 # Probability that dealer hits a face card
@@ -79,7 +69,7 @@ def eval_prob(dealer_sum, num_cards, num_aces, acc_prob, face_up):
             else:
                 # Probability that dealer hits a number card
                 eval_prob(dealer_sum+card, num_cards+1, num_aces, acc_prob*(1-PROB)/9.0, face_up)
-        if face_up == 11:
+        if DEBUG and face_up == 11:
             STACK.pop()
 
 def generate_table(p):
@@ -93,7 +83,8 @@ def generate_table(p):
     PROB = p
     for card in range(2, 12):
         if card is 11:
-            STACK.append(11)
+            if DEBUG:
+                STACK.append(11)
             eval_prob(card, 1, 1, 1.0, 11)
         else:
             eval_prob(card, 1, 0, 1.0, card)
