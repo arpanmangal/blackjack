@@ -10,6 +10,7 @@ PLAYER_BLACKJACK = False
 PROB = 0
 PLAYER_SUM = 0
 REWARDS = []
+PROBABILITY = []
 DEFAULT = float('inf')
 
 for i in range(DEALER_CUTOFF, BUSTED_CUTOFF+1):
@@ -19,7 +20,36 @@ for i in range(DEALER_CUTOFF, BUSTED_CUTOFF+1):
         sum_reward.append(DEFAULT)
     REWARDS.append(sum_reward)
 
-def find_prob(dealer_sum, num_cards, is_soft): 
+def eval_prob(dealer_sum, num_cards, is_soft, acc_prob, face_up):
+    """
+    This function evaluates the probability of the final sum of 
+    the dealer holding various values when the current face up 
+    card is `face_up` and the softness of the hand is given by `is_soft`.
+    """
+
+    if dealer_sum > BUSTED_CUTOFF:
+        if is_soft:
+            eval_prob(dealer_sum-10, num_cards, False, acc_prob, face_up)
+        else:
+            PROBABILITY[(face_up, 22)] = acc_prob
+    elif dealer_sum == BUSTED_CUTOFF and num_cards == 2:
+        PROBABILITY[(face_up, 23)] = acc_prob
+    elif dealer_sum >= DEALER_CUTOFF:
+        PROBABILITY[(face_up, dealer_sum)] = acc_prob
+
+    for card in range(2, 12):
+        if card == 10:
+            # Probability that dealer hits a face card
+            eval_prob(dealer_sum+card, num_cards+1, is_soft, acc_prob*PROB, face_up)
+        elif card == 11:
+            # Probability that dealer hits an ace
+            eval_prob(dealer_sum+card, num_cards+1, True, acc_prob*(1-PROB)/9, face_up)
+        else:
+            # Probability that dealer hits a number card
+            eval_prob(dealer_sum+card, num_cards+1, is_soft, acc_prob*(1-PROB)/9, face_up)
+
+
+def find_prob_tuple(dealer_sum, num_cards, is_soft): 
     """
     This function gives the probability that eventually after 
     performing consecutive Hit moves, the dealer sum exceeds or is 
@@ -47,7 +77,7 @@ def find_prob(dealer_sum, num_cards, is_soft):
     if dealer_sum > BUSTED_CUTOFF:
         if is_soft:
             # Dealer's hand is soft and is exceeding the limit. Take the ace as 1.
-            return find_prob(dealer_sum-10, num_cards, False)
+            return find_prob_tuple(dealer_sum-10, num_cards, False)
         else:
             # Dealer's hand is eithere hard or no ace present. Hence, dealer busted.
             return (0, 1, 0, 0)
@@ -73,21 +103,21 @@ def find_prob(dealer_sum, num_cards, is_soft):
     for card in range(2,12):
         if card is 10:
             # Add the probability of getting a Face Card in the next hit move
-            face_prob_tuple = find_prob(dealer_sum + 10, num_cards+1, False)
+            face_prob_tuple = find_prob_tuple(dealer_sum + 10, num_cards+1, False)
             nobust_prob = nobust_prob + PROB * face_prob_tuple[0]
             bust_prob = bust_prob + PROB * face_prob_tuple[1]
             push_prob = push_prob + PROB * face_prob_tuple[2]
             blackjack_prob = blackjack_prob + PROB * face_prob_tuple[3]
         elif card is 11:
             # Add the probability of getting an ace
-            prob_tuple = find_prob(dealer_sum + card, num_cards+1, True)
+            prob_tuple = find_prob_tuple(dealer_sum + card, num_cards+1, True)
             nobust_prob = nobust_prob + (1-PROB)/9 * prob_tuple[0]
             bust_prob = bust_prob + (1-PROB)/9 * prob_tuple[1]
             push_prob = push_prob + (1-PROB)/9 * prob_tuple[2]
             blackjack_prob = blackjack_prob + (1-PROB)/9 * prob_tuple[3]
         else:
             # Add the probabilities corresponding to simple number cards
-            prob_tuple = find_prob(dealer_sum + card, num_cards+1, False)
+            prob_tuple = find_prob_tuple(dealer_sum + card, num_cards+1, False)
             nobust_prob = nobust_prob + (1-PROB)/9 * prob_tuple[0]
             bust_prob = bust_prob + (1-PROB)/9 * prob_tuple[1]
             push_prob = push_prob + (1-PROB)/9 * prob_tuple[2]
@@ -119,15 +149,15 @@ def reward(face_up, player_sum, p, bet, has_blackjack):
     elif PLAYER_SUM > BUSTED_CUTOFF:
         return -bet
     else:
-        array_index = PLAYER_SUM - DEALER_CUTOFF
-        if REWARDS[array_index][face_up-2] < DEFAULT:
-            return REWARDS[array_index][face_up-2]
+        # array_index = PLAYER_SUM - DEALER_CUTOFF
+        # if REWARDS[array_index][face_up-2] < DEFAULT:
+        #     return REWARDS[array_index][face_up-2]
 
         prob_tuple = (0, 0, 0, 0)
         if face_up is 11:
-            prob_tuple = find_prob(face_up, 1, True)
+            prob_tuple = find_prob_tuple(face_up, 1, True)
         else:
-            prob_tuple = find_prob(face_up, 1, False)
+            prob_tuple = find_prob_tuple(face_up, 1, False)
 
         nobust_prob = prob_tuple[0]
         bust_prob = prob_tuple[1]
@@ -137,6 +167,6 @@ def reward(face_up, player_sum, p, bet, has_blackjack):
         simple_win_prob = (1-nobust_prob-push_prob-blackjack_prob)
         reward = simple_win_prob * bet + 1.5 * blackjack_prob * bet - nobust_prob * bet
 
-        REWARDS[array_index][face_up-2] = reward
+        # REWARDS[array_index][face_up-2] = reward
         return reward
         
