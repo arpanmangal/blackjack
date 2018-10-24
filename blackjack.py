@@ -136,6 +136,7 @@ def R_soft(y, dealer_card, bet, current_values, isDoubleAllowed=False):
     Calculates the optimal long term reward (or value) when the player
     has a soft hand of the form Ay
     """
+    assert type(y) is int
     if y == 10:
         #A10
         if isDoubleAllowed:
@@ -158,11 +159,11 @@ def R_soft(y, dealer_card, bet, current_values, isDoubleAllowed=False):
         else:
             hit += num_card_prob * current_values[( ('A' + str(y+x)), dealer_card, False)] * bet
     # x is an ace
-        if 11+y+1 > 21:
-            hit += num_card_prob * current_values[( str(1+y+1), dealer_card, False)] * bet
-        else:
-            hit += num_card_prob * current_values[( ('A' + str(y+1)), dealer_card, False)] * bet
-    
+    if 11+y+1 > 21:
+        hit += num_card_prob * current_values[( str(1+y+1), dealer_card, False)] * bet
+    else:
+        hit += num_card_prob * current_values[( ('A' + str(y+1)), dealer_card, False)] * bet
+
     if (not isDoubleAllowed):
         if stand >= hit:
             return (stand, 'S')
@@ -179,10 +180,10 @@ def R_soft(y, dealer_card, bet, current_values, isDoubleAllowed=False):
         else:
             double += num_card_prob * dealer(11+y+x, dealer_card, 2*bet)
     # x is an ace
-        if 11+y+1 > 21:
-            double += num_card_prob * dealer(1+y+1, dealer_card, 2*bet)
-        else:
-            double += num_card_prob * dealer(11+y+1, dealer_card, 2*bet)
+    if 11+y+1 > 21:
+        double += num_card_prob * dealer(1+y+1, dealer_card, 2*bet)
+    else:
+        double += num_card_prob * dealer(11+y+1, dealer_card, 2*bet)
 
     if stand >= hit:
         if double >= stand:
@@ -436,7 +437,7 @@ def dealer (player_sum, dealer_card, bet, hasBlackjack=False):
     """
 
     return player_reward(player_sum, dealer_card, bet, hasBlackjack)
-    
+
     if player_sum > 21:
         return -bet
 
