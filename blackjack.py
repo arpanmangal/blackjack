@@ -4,7 +4,7 @@ An optimal policy for blackjack (casino card game) using MDP
 """
 
 import sys
-from dealer import reward
+from dealer import reward, generate_table, write_table
 from stand import read_dealer_table, player_reward
 
 ## Policy is key value pair of (states, value)
@@ -481,7 +481,11 @@ if __name__ == '__main__':
     face_card_prob = float(sys.argv[1])
     num_card_prob = (1 - face_card_prob) / 9.0
 
-    read_dealer_table()
+    # read_dealer_table()
+
+    # Generate Table
+    generate_table()
+    write_table()
 
     optimal_values = initialise_values()
     f = open('log.txt', 'w')

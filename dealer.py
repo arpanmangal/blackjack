@@ -10,7 +10,7 @@ PLAYER_BLACKJACK = False
 PROB = 0
 PLAYER_SUM = 0
 REWARDS = []
-PROBABILITY = []
+PROBABILITY = {}
 DEFAULT = float('inf')
 
 for i in range(DEALER_CUTOFF, BUSTED_CUTOFF+1):
@@ -20,11 +20,17 @@ for i in range(DEALER_CUTOFF, BUSTED_CUTOFF+1):
         sum_reward.append(DEFAULT)
     REWARDS.append(sum_reward)
 
+for i in range(2, 12):
+    for dealer_sum in range(DEALER_CUTOFF, BUSTED_CUTOFF+3):
+        PROBABILITY[(i, dealer_sum)] = -1
+
 def eval_prob(dealer_sum, num_cards, is_soft, acc_prob, face_up):
     """
-    This function evaluates the probability of the final sum of 
-    the dealer holding various values when the current face up 
-    card is `face_up` and the softness of the hand is given by `is_soft`.
+    This function evaluates the various probabilities for the final sum of 
+    the dealer when the current face up card is `face_up`, the sum as yet is
+    `dealer_sum`, the softness of the hand is given by `is_soft`, 
+    the accumulated probabilty till this move is `acc_prob` and 
+    the number of cards with the dealer is given by `num_cards`.
     """
 
     if dealer_sum > BUSTED_CUTOFF:
@@ -47,6 +53,25 @@ def eval_prob(dealer_sum, num_cards, is_soft, acc_prob, face_up):
         else:
             # Probability that dealer hits a number card
             eval_prob(dealer_sum+card, num_cards+1, is_soft, acc_prob*(1-PROB)/9, face_up)
+
+def generate_table():
+    """
+    Generate the table to be used for calculating dealer reward probabilities
+    Makes use of the function `eval_prob()`
+    """
+    for card in range(2, 12):
+        if card is 11:
+            eval_prob(card, 1, True, 1, 11)
+        else:
+            eval_prob(card, 1, False, 1, card)
+
+
+def write_table():
+    file = open('table.txt','w')
+    for face_up in range(2, 12):
+        for dealer_sum in range(DEALER_CUTOFF, BUSTED_CUTOFF+3):
+            file.write(PROBABILITY[(face_up, dealer_sum)])
+        file.write('\n')
 
 
 def find_prob_tuple(dealer_sum, num_cards, is_soft): 
