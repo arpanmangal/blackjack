@@ -22,7 +22,7 @@ for i in range(DEALER_CUTOFF, BUSTED_CUTOFF+1):
 
 for i in range(2, 12):
     for dealer_sum in range(DEALER_CUTOFF, BUSTED_CUTOFF+3):
-        PROBABILITY[(i, dealer_sum)] = -1
+        PROBABILITY[(i, dealer_sum)] = 0
 
 def eval_prob(dealer_sum, num_cards, is_soft, acc_prob, face_up):
     """
@@ -33,32 +33,41 @@ def eval_prob(dealer_sum, num_cards, is_soft, acc_prob, face_up):
     the number of cards with the dealer is given by `num_cards`.
     """
 
+    global BUSTED_CUTOFF
+    global DEALER_CUTOFF
+    global PROB
+    global PROBABILITY
+
+    print ('Starting for ds:{0} fu:{1}'.format(dealer_sum, face_up))
     if dealer_sum > BUSTED_CUTOFF:
         if is_soft:
             eval_prob(dealer_sum-10, num_cards, False, acc_prob, face_up)
         else:
-            PROBABILITY[(face_up, 22)] = acc_prob
+            PROBABILITY[(face_up, 22)] += acc_prob
     elif dealer_sum == BUSTED_CUTOFF and num_cards == 2:
-        PROBABILITY[(face_up, 23)] = acc_prob
+        PROBABILITY[(face_up, 23)] += acc_prob
     elif dealer_sum >= DEALER_CUTOFF:
-        PROBABILITY[(face_up, dealer_sum)] = acc_prob
-
-    for card in range(2, 12):
-        if card == 10:
-            # Probability that dealer hits a face card
-            eval_prob(dealer_sum+card, num_cards+1, is_soft, acc_prob*PROB, face_up)
-        elif card == 11:
-            # Probability that dealer hits an ace
-            eval_prob(dealer_sum+card, num_cards+1, True, acc_prob*(1-PROB)/9, face_up)
-        else:
-            # Probability that dealer hits a number card
-            eval_prob(dealer_sum+card, num_cards+1, is_soft, acc_prob*(1-PROB)/9, face_up)
+        PROBABILITY[(face_up, dealer_sum)] += acc_prob
+    else:
+        for card in range(2, 12):
+            if card == 10:
+                # Probability that dealer hits a face card
+                eval_prob(dealer_sum+card, num_cards+1, is_soft, acc_prob*PROB, face_up)
+            elif card == 11:
+                # Probability that dealer hits an ace
+                eval_prob(dealer_sum+card, num_cards+1, True, acc_prob*(1-PROB)/9, face_up)
+            else:
+                # Probability that dealer hits a number card
+                eval_prob(dealer_sum+card, num_cards+1, is_soft, acc_prob*(1-PROB)/9, face_up)
 
 def generate_table():
     """
     Generate the table to be used for calculating dealer reward probabilities
     Makes use of the function `eval_prob()`
     """
+    global PROB
+
+    PROB = 0.308
     for card in range(2, 12):
         if card is 11:
             eval_prob(card, 1, True, 1, 11)
@@ -70,7 +79,7 @@ def write_table():
     file = open('table.txt','w')
     for face_up in range(2, 12):
         for dealer_sum in range(DEALER_CUTOFF, BUSTED_CUTOFF+3):
-            file.write(PROBABILITY[(face_up, dealer_sum)])
+            file.write(str(PROBABILITY[(face_up, dealer_sum)])+' ')
         file.write('\n')
 
 
