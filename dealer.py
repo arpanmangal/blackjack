@@ -26,7 +26,7 @@ for i in range(2, 12):
     for dealer_sum in range(DEALER_CUTOFF, BUSTED_CUTOFF+3):
         PROBABILITY[(i, dealer_sum)] = 0
 
-def eval_prob(dealer_sum, num_cards, is_soft, acc_prob, face_up):
+def eval_prob(dealer_sum, num_cards, num_aces, acc_prob, face_up):
     """
     This function evaluates the various probabilities for the final sum of 
     the dealer when the current face up card is `face_up`, the sum as yet is
@@ -44,8 +44,8 @@ def eval_prob(dealer_sum, num_cards, is_soft, acc_prob, face_up):
     # if face_up == 11:
         # print ('Starting for ds:{0}'.format(dealer_sum), end=' ')
     if dealer_sum > BUSTED_CUTOFF:
-        if is_soft:
-            eval_prob(dealer_sum-10, num_cards, False, acc_prob, face_up)
+        if num_aces > 0:
+            eval_prob(dealer_sum-10, num_cards, num_aces-1, acc_prob, face_up)
         else:
             if face_up == 11:
                 print (STACK)
@@ -72,13 +72,13 @@ def eval_prob(dealer_sum, num_cards, is_soft, acc_prob, face_up):
                 STACK.append(card)
             if card == 10:
                 # Probability that dealer hits a face card
-                eval_prob(dealer_sum+card, num_cards+1, is_soft, acc_prob*PROB/1.0, face_up)
+                eval_prob(dealer_sum+card, num_cards+1, num_aces, acc_prob*PROB/1.0, face_up)
             elif card == 11:
                 # Probability that dealer hits an ace
-                eval_prob(dealer_sum+card, num_cards+1, True, acc_prob*(1-PROB)/9.0, face_up)
+                eval_prob(dealer_sum+card, num_cards+1, num_aces+1, acc_prob*(1-PROB)/9.0, face_up)
             else:
                 # Probability that dealer hits a number card
-                eval_prob(dealer_sum+card, num_cards+1, is_soft, acc_prob*(1-PROB)/9.0, face_up)
+                eval_prob(dealer_sum+card, num_cards+1, num_aces, acc_prob*(1-PROB)/9.0, face_up)
         if face_up == 11:
             STACK.pop()
 
@@ -94,9 +94,9 @@ def generate_table(p):
     for card in range(2, 12):
         if card is 11:
             STACK.append(11)
-            eval_prob(card, 1, True, 1.0, 11)
+            eval_prob(card, 1, 1, 1.0, 11)
         else:
-            eval_prob(card, 1, False, 1.0, card)
+            eval_prob(card, 1, 0, 1.0, card)
 
 
 def write_table():
