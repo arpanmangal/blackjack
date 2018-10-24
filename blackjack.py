@@ -483,7 +483,7 @@ if __name__ == '__main__':
     num_card_prob = (1 - face_card_prob) / 9.0
 
     # Generate Table
-    generate_table()
+    generate_table(face_card_prob)
     write_table()
 
     read_dealer_table()

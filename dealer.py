@@ -60,14 +60,14 @@ def eval_prob(dealer_sum, num_cards, is_soft, acc_prob, face_up):
                 # Probability that dealer hits a number card
                 eval_prob(dealer_sum+card, num_cards+1, is_soft, acc_prob*(1-PROB)/9, face_up)
 
-def generate_table():
+def generate_table(p):
     """
     Generate the table to be used for calculating dealer reward probabilities
     Makes use of the function `eval_prob()`
     """
     global PROB
 
-    PROB = 0.308
+    PROB = p
     for card in range(2, 12):
         if card is 11:
             eval_prob(card, 1, True, 1, 11)
@@ -76,7 +76,7 @@ def generate_table():
 
 
 def write_table():
-    file = open('table.txt','w')
+    file = open('stand.prob','w')
     for face_up in range(2, 12):
         for dealer_sum in range(DEALER_CUTOFF, BUSTED_CUTOFF+3):
             file.write(str(PROBABILITY[(face_up, dealer_sum)])+' ')
