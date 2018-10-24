@@ -5,6 +5,7 @@ An optimal policy for blackjack (casino card game) using MDP
 
 import sys
 from dealer import reward
+from stand import read_dealer_table, player_reward
 
 ## Policy is key value pair of (states, value)
 ## State = (player_hand, dealer_card, double_allowed)
@@ -343,13 +344,14 @@ def R_split_AA(dealer_card, bet, current_values, isDoubleAllowed=False):
 
     ## double
     double = 0
-    double += face_card_prob * (-2*bet) #12+10 = bust
+    # double += face_card_prob * (-2*bet) #12+10 = bust <= bug
+    double += face_card_prob * dealer(10+1+1, dealer_card, 2*bet)
 
     for x in range(2, 10): #pick another card x
         double += num_card_prob * dealer(12+x, dealer_card, 2*bet)
 
     # x is an Ace
-    double += dealer(14, dealer_card, 2*bet)
+    double += dealer(11+1+1, dealer_card, 2*bet)
 
     if double > max_action[0]:
         return double, 'D'
@@ -433,6 +435,8 @@ def dealer (player_sum, dealer_card, bet, hasBlackjack=False):
     Take care to deal with cases where player_sum > 21, in which case return -1 i.e. player bust
     """
 
+    return player_reward(player_sum, dealer_card, bet, hasBlackjack)
+    
     if player_sum > 21:
         return -bet
 
@@ -443,30 +447,30 @@ def dealer (player_sum, dealer_card, bet, hasBlackjack=False):
     return reward(dealer_sum, player_sum, face_card_prob, bet, hasBlackjack)
 
 
-def calc_hand_sum(hand):
-    """
-    Calculate the sum of this hand
-    Outputs (soft, hard) value
-    """
+# def calc_hand_sum(hand):
+#     """
+#     Calculate the sum of this hand
+#     Outputs (soft, hard) value
+#     """
 
-    if hand[0] == 'A':
-        if hand[1] == 'A': ## AA
-            ## CONFIRM -> THREE VALUES POSSIBLE
-            return (12, 2)
-        elif len(hand) == 3: ## A10
-            return (21, 11)
-        else: ## Ax
-            h = int(hand[1]) + 1
-            return (h+10, h)
+#     if hand[0] == 'A':
+#         if hand[1] == 'A': ## AA
+#             ## CONFIRM -> THREE VALUES POSSIBLE
+#             return (12, 2)
+#         elif len(hand) == 3: ## A10
+#             return (21, 11)
+#         else: ## Ax
+#             h = int(hand[1]) + 1
+#             return (h+10, h)
 
-    elif hand == '1010': ## 1010
-        return (20, 20)
-    elif hand[0] == hand[1] and hand is not '11': ## xx
-        v = 2 * int(hand[0])
-        return (v, v)
-    else: ## x
-        v = int(hand)
-        return (v, v)
+#     elif hand == '1010': ## 1010
+#         return (20, 20)
+#     elif hand[0] == hand[1] and hand is not '11': ## xx
+#         v = 2 * int(hand[0])
+#         return (v, v)
+#     else: ## x
+#         v = int(hand)
+#         return (v, v)
 
 
 if __name__ == '__main__':
@@ -476,6 +480,8 @@ if __name__ == '__main__':
     
     face_card_prob = float(sys.argv[1])
     num_card_prob = (1 - face_card_prob) / 9.0
+
+    read_dealer_table()
 
     optimal_values = initialise_values()
     f = open('log.txt', 'w')
