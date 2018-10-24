@@ -13,6 +13,8 @@ REWARDS = []
 PROBABILITY = {}
 DEFAULT = float('inf')
 
+STACK = []
+
 for i in range(DEALER_CUTOFF, BUSTED_CUTOFF+1):
     sum_reward = []
     for card in range(2, 12):
@@ -36,20 +38,38 @@ def eval_prob(dealer_sum, num_cards, is_soft, acc_prob, face_up):
     global BUSTED_CUTOFF
     global DEALER_CUTOFF
     global PROB
+    global STACK
     global PROBABILITY
 
-    # print ('Starting for ds:{0} fu:{1}'.format(dealer_sum, face_up))
+    # if face_up == 11:
+        # print ('Starting for ds:{0}'.format(dealer_sum), end=' ')
     if dealer_sum > BUSTED_CUTOFF:
         if is_soft:
             eval_prob(dealer_sum-10, num_cards, False, acc_prob, face_up)
         else:
-            PROBABILITY[(face_up, 22)] += acc_prob
-    elif dealer_sum == BUSTED_CUTOFF and num_cards == 2:
-        PROBABILITY[(face_up, 23)] += acc_prob
+            if face_up == 11:
+                print (STACK)
+                # print ("Busted")
+            PROBABILITY[(face_up, 22)] += acc_prob      # Busted
     elif dealer_sum >= DEALER_CUTOFF:
-        PROBABILITY[(face_up, dealer_sum)] += acc_prob
+        if dealer_sum == BUSTED_CUTOFF and num_cards == 2:
+            # if face_up == 11:
+            #     print (STACK, end=' ')
+            #     print ("Blackjack")
+            PROBABILITY[(face_up, 23)] += acc_prob      # Blackjack
+        else:
+            # if dealer_sum == 17 and face_up == 11:
+                # print (STACK)
+                # print ("No Busted")
+            PROBABILITY[(face_up, dealer_sum)] += acc_prob
     else:
         for card in range(2, 12):
+            if face_up is 11:
+                if card != 2: 
+                    c = STACK.pop()
+                #     print ('Removed {0}'.format(c), end=' ')
+                # print ('Appending {0}'.format(card))
+                STACK.append(card)
             if card == 10:
                 # Probability that dealer hits a face card
                 eval_prob(dealer_sum+card, num_cards+1, is_soft, acc_prob*PROB/1.0, face_up)
@@ -59,6 +79,8 @@ def eval_prob(dealer_sum, num_cards, is_soft, acc_prob, face_up):
             else:
                 # Probability that dealer hits a number card
                 eval_prob(dealer_sum+card, num_cards+1, is_soft, acc_prob*(1-PROB)/9.0, face_up)
+        if face_up == 11:
+            STACK.pop()
 
 def generate_table(p):
     """
@@ -66,10 +88,12 @@ def generate_table(p):
     Makes use of the function `eval_prob()`
     """
     global PROB
+    global STACK
 
     PROB = p
     for card in range(2, 12):
         if card is 11:
+            STACK.append(11)
             eval_prob(card, 1, True, 1.0, 11)
         else:
             eval_prob(card, 1, False, 1.0, card)

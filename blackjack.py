@@ -479,7 +479,7 @@ if __name__ == '__main__':
     Main function
     """
     
-    face_card_prob = float(sys.argv[1])
+    face_card_prob = 4.0/13
     num_card_prob = (1 - face_card_prob) / 9.0
 
     # Generate Table
@@ -494,7 +494,7 @@ if __name__ == '__main__':
     for i in range(20):
         optimal_values = value_iteration(optimal_values)
         log_policy(optimal_values)
-        print (i, 'th iteration complete')
+        # print (i, 'th iteration complete')
 
     optimal_policy = get_policy(optimal_values)
     print_policy(optimal_policy)
