@@ -412,23 +412,23 @@ def print_policy (policy):
             elif card is not 'A':
                 f.write(' ')
 
-def log_policy (values):
-    """
-    Log the policy to a file
-    """
+# def log_policy (values):
+#     """
+#     Log the policy to a file
+#     """
 
-    f = open('log.txt', 'a')
-    for hand in player_hand:
-        f.write (hand + '\t')
-        for card in dealer_card:
-            value = values[(hand, card, True)]
-            f.write(str(value))
-            if card is 'A' and hand is not 'AA':
-                f.write('\n')
-            elif card is not 'A':
-                f.write(' ')
+#     f = open('log.txt', 'a')
+#     for hand in player_hand:
+#         f.write (hand + '\t')
+#         for card in dealer_card:
+#             value = values[(hand, card, True)]
+#             f.write(str(value))
+#             if card is 'A' and hand is not 'AA':
+#                 f.write('\n')
+#             elif card is not 'A':
+#                 f.write(' ')
 
-    f.write('\n\n')
+#     f.write('\n\n')
 
 
 def dealer (player_sum, dealer_card, bet, hasBlackjack=False):
@@ -494,12 +494,8 @@ if __name__ == '__main__':
     read_dealer_table()
 
     optimal_values = initialise_values()
-    f = open('log.txt', 'w')
-    f.write('')
     for i in range(20):
         optimal_values = value_iteration(optimal_values)
-        log_policy(optimal_values)
-        # print (i, 'th iteration complete')
 
     optimal_policy = get_policy(optimal_values)
     print_policy(optimal_policy)
