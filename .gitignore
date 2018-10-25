@@ -105,5 +105,6 @@ venv.bak/
 
 # custom
 Policy.txt
+debug/*
 .vscode/*
 *.txt
