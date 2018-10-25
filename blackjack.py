@@ -369,8 +369,8 @@ def get_policy(values):
     policy = {}
 
     for hand in player_hand:
-        # if hand is 'A10' or hand is '20' or hand is '21':
-            # continue
+        if hand is 'A10' or hand is '20' or hand is '21':
+            continue
         for card in dealer_card:
             if hand is 'AA':
                 action = R_split('A', card, 1, values, True)[1]
@@ -396,8 +396,8 @@ def print_policy (policy):
     """
     f = open("Policy.txt", "w")
     for hand in player_hand:
-        # if hand is 'A10' or hand is '20' or hand is '21':
-            # continue
+        if hand is 'A10' or hand is '20' or hand is '21':
+            continue
         f.write (hand + '\t')
         for card in dealer_card:
             action = policy[(hand, card)]
@@ -479,7 +479,7 @@ if __name__ == '__main__':
     Main function
     """
     
-    face_card_prob = 4.0/13
+    face_card_prob = float(sys.argv[1])
     num_card_prob = (1 - face_card_prob) / 9.0
 
     # Generate Table
