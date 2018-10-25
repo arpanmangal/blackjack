@@ -304,12 +304,13 @@ def R_split_AA(dealer_card, bet, current_values, isDoubleAllowed=False):
 
     # hit
     hit = 0
-    hit += face_card_prob * (-bet) # a face card will always bust you
+    # hit += face_card_prob * (-bet) # a face card will always bust you <= bug
+    hit += face_card_prob * current_values[('12', dealer_card, False)] * bet
 
     for x in range(2, 10): # pick another card x
-        if 12+x > 21:
-            hit += num_card_prob * (-bet)
-        else:
+        # if 12+x > 21:
+        #     hit += num_card_prob * (-bet)
+        # else:
             hit += num_card_prob * current_values[ (str(12+x), dealer_card, False) ] * bet
 
     # x is an Ace
@@ -340,6 +341,10 @@ def R_split_AA(dealer_card, bet, current_values, isDoubleAllowed=False):
             max_action = split, 'P'
         else:
             max_action = hit, 'H'
+
+    if dealer_card == 'A':
+        max_action = hit, 'H'
+
     if (not isDoubleAllowed):
         return max_action
 
